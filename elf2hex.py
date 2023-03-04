@@ -3,7 +3,7 @@ File: elf2hex.py
 Created Date: 2023-02-26 08:53:02 pm
 Author: Mathieu Escouteloup
 -----
-Last Modified: 2023-02-26 08:53:10 pm
+Last Modified: 2023-03-04 10:43:56 am
 Modified By: Mathieu Escouteloup
 -----
 License: See LICENSE.md
@@ -19,42 +19,44 @@ from elftools.elf.sections import NoteSection, SymbolTableSection, Section
 from elftools.elf.segments import Segment
 
 @click.command()
-@click.option('--input',                    help='Path to input file')
-@click.option('--wide',   default=16,       help='Number of bytes per line')
-@click.option('--output', default='f.hex',  help='Path to output file')
-@click.option('--word',   default=1,        help='Number of bytes per word')
+@click.option('--input',                        help='Path to input file')
+@click.option('--output', default='f.hex',      help='Path to output file')
+@click.option('--offset', default="0x00000000", help='Start address')
+@click.option('--wide',   default=16,           help='Number of bytes per line')
+@click.option('--word',   default=1,            help='Number of bytes per word')
 
 
-
-def read_elf_file(input, wide, output, word):
+def read_elf_file(input, output, offset, wide, word):
     e = ELFFile(open(input, 'rb'))
-    acc2 = [bytearray(), bytearray()]
-    accumulator = bytearray()
+    
+    acc = bytearray()
     for seg in e.iter_segments():
-        accumulator = extend_with_segment(accumulator, seg)
+        acc = extend_with_segment(acc, int(offset, 0), seg)
 
-    whole_string = gen_string(accumulator, wide, word)
+    whole_string = gen_string(acc, wide, word)
 
     # write to output file
     with open(output, "w") as hex_file:
         hex_file.write(whole_string)
     
 
-def extend_with_segment(accumulator, segment):
-    start_addr = segment['p_paddr']
-    size = segment['p_memsz']
-    end_addr = start_addr + size
+def extend_with_segment(acc, offset, segment): 
+    seg_start = segment['p_paddr']
+    seg_size = segment['p_memsz']
+    seg_end = seg_start + seg_size
 
-    data = segment.data()    
+    if (seg_start >= offset):
+        data = segment.data()  
 
-    while len(accumulator) < end_addr:
-        accumulator += bytearray(1)
+        while len(acc) < (seg_end - offset):
+            acc += bytearray(1)
+
+        for d in range(len(data)):
+            acc[seg_start + d - offset] = data[d]
+    else:
+        print("Ignored.")
     
-    for add in range(start_addr, end_addr):
-        if (len(data) > (add-start_addr)):
-            accumulator[add] = data[add-start_addr]
-    
-    return accumulator
+    return acc
 
 def gen_string(byte_data, wide, word):
     str_word = ""
