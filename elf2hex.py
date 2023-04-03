@@ -3,7 +3,7 @@ File: elf2hex.py
 Created Date: 2023-02-26 08:53:02 pm
 Author: Mathieu Escouteloup
 -----
-Last Modified: 2023-03-04 10:43:56 am
+Last Modified: 2023-03-31 04:58:46 pm
 Modified By: Mathieu Escouteloup
 -----
 License: See LICENSE.md
@@ -44,6 +44,13 @@ def extend_with_segment(acc, offset, segment):
     seg_start = segment['p_paddr']
     seg_size = segment['p_memsz']
     seg_end = seg_start + seg_size
+
+    # Print for debug
+    # print("NEW SECTION")
+    # print(hex(seg_start))
+    # print(hex(seg_size))
+    # print(hex(seg_end))
+    # print(hex(offset))
 
     if (seg_start >= offset):
         data = segment.data()  
