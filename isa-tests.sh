@@ -28,6 +28,6 @@ do
   test=`echo "$line" | awk '{print $1;}'`
   ninstret=`echo "$line" | awk '{print $2;}'`
   trigger=`echo "$line" | awk '{print $3;}'`
-  ${EXE_DIR}/${SIM_NAME} --test --boot ${HEX_DIR}/${test}.rom.hex --vcd ${VCD_DIR}/${SIM_NAME}/${test}.vcd --trigger ${trigger} --ninst ${ninstret}
+  ${EXE_DIR}/${SIM_NAME} --test --boot ${HEX_DIR}/${test}.boot8.hex --vcd ${VCD_DIR}/${SIM_NAME}/${test}.vcd --trigger ${trigger} --ninst ${ninstret}
 done < "${TST_DIR}/${SIM_NAME}.tst"
 } | tee ${LOG_DIR}/${SIM_NAME}.log
